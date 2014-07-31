@@ -2,7 +2,7 @@
 define fluentd::source (
     $configfile,
     $type,
-    $tag          = false,
+    $tag_name     = false,
     $format       = false,
     $time_format  = false,
     $config       = {},

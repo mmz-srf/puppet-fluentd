@@ -54,7 +54,7 @@ The Agent watches over your logfiles and sends its content to the Collector.
     configfile => 'apache'
     type => 'tail',
     format => 'apache2',
-    tag => 'apache.access_log',
+    tag_name => 'apache.access_log',
     config => {
       'path' => '/var/log/apache2/access.log',
       'pos_file' => '/var/tmp/fluentd.pos',
@@ -67,7 +67,7 @@ The Agent watches over your logfiles and sends its content to the Collector.
     configfile => 'syslog',
     type => 'tail',
     format => 'syslog',
-    tag => 'system.syslog',
+    tag_name => 'system.syslog',
     config => {
       'path' => '/var/log/syslog',
       'pos_file' => '/tmp/td-agent.syslog.pos',
@@ -125,7 +125,7 @@ The Collector collects all the data from the Agents. He now stores the data in f
   fluentd::source { 'rsyslog_main':
     configfile => 'rsyslog',
     type => 'syslog',
-    tag => 'system.local',
+    tag_name => 'system.local',
     config => {
       'port' => '5140',
       'bind' => '0.0.0.0',
