@@ -1,16 +1,12 @@
 # == definition fluentd::source
 define fluentd::source (
-    $configfile,
-    $type,
-    $tag_name     = false,
-    $format       = false,
-    $time_format  = false,
-    $config       = {},
+  $ensure   = present,
+  $priority = 50,
+  $config   = {},
 ) {
-
-    concat::fragment { "source_${title}":
-        target  => "/etc/td-agent/config.d/${configfile}.conf",
-        require => Package["${fluentd::package_name}"],
-        content => template('fluentd/source.erb'),
-    }
+  fluentd::configfile { "source-${name}":
+    ensure   => $ensure,
+    content  => template( 'fluentd/source.erb' ),
+    priority => $priority,
+  }
 }

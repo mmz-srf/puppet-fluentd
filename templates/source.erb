@@ -1,9 +1,5 @@
 <source>
-  type <%= @type %>
 <% @config.sort_by{|key,val|key}.each do |key, val| -%>
   <%= key %> <%= val %>
 <% end -%>
-<% if @format != false -%>  format <%= @format %><% end %>
-<% if @time_format != false -%>  time_format <%= @time_format %><% end %>
-<% if @tag_name != false -%>  tag <%= @tag_name %><% end %>
 </source>
