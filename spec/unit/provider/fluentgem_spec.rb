@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 require 'spec_helper'
 
-provider_class = Puppet::Type.type(:package).provider(:gem)
+provider_class = Puppet::Type.type(:package).provider(:fluentgem)
 
 describe provider_class do
   let(:resource) do
