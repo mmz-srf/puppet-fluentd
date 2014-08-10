@@ -8,7 +8,7 @@ define fluentd::filter (
   $pattern,
 ) {
 
-  if ($type == 'grep') {
+  if ($config['type'] == 'grep') {
     if !defined(Fluentd::Install_plugin['fluent-plugin-grep']) {
       fluentd::install_plugin{'fluent-plugin-grep':
         plugin_type => 'gem'
