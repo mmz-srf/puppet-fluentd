@@ -183,20 +183,18 @@ fluentd::match { 'forward_to_logger':
 
 ### add a filter
 ```
-    fluentd::configfile { 'myfilter': }
-    fluentd::filter { 'myfilter_main':
-      configfile          => 'myfilter',
+    fluentd::filter { 'myfilter':
       pattern             => '**',
-      type                => 'grep',
-      input_key           => 'key',
-      regexp              => '/*.foo.*/',
-      exclude             => 'baar',
-      output_tag          => 'mytag',
-      add_tag_prefix      => 'pre_',
-      remove_tag_prefix   => 'remove_',
-      add_tag_suffix      => '_after',
-      remove_tag_suffix   => '_remove',
       config     => {
+        'type'                => 'grep',
+        'input_key'           => 'key',
+        'regexp'              => '/*.foo.*/',
+        'exclude'             => 'baar',
+        'output_tag'          => 'mytag',
+        'add_tag_prefix'      => 'pre_',
+        'remove_tag_prefix'   => 'remove_',
+        'add_tag_suffix'      => '_after',
+        'remove_tag_suffix'   => '_remove',
         'customvalue' => true,
       }
     }
