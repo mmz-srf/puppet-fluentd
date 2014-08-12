@@ -3,11 +3,11 @@
   type copy
   <%- @config.each do |config| -%>
   <store>
-    <%- config.sort_by{ |key,val| key == 'servers' ? 'z' : key }.each do |key, val| -%>
+    <%- config.each do |key, val| -%>
       <%- if key == 'servers' -%>
         <%- val.each do |server| -%>
         <server>
-          <%- server.sort_by{|k,v|k}.each do |k,v| -%>
+          <%- server.each do |k,v| -%>
           <%= k %> <%= v %>
           <%- end -%>
         </server>
@@ -19,11 +19,11 @@
   </store>
   <%- end -%>
 <%- else -%>
-  <%- @config.sort_by{ |key,val| key == 'servers' ? 'z' : key }.each do |key, val| -%>
+  <%- @config.each do |key, val| -%>
     <%- if key == 'servers' -%>
       <%- val.each do |server| -%>
       <server>
-        <%- server.sort_by{|k,v|k}.each do |k,v| -%>
+        <%- server.each do |k,v| -%>
         <%= k %> <%= v %>
         <%- end -%>
       </server>
