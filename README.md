@@ -145,7 +145,7 @@ fluentd::source { 'rsyslog':
 ```
 /etc/td-agent/
   ├── config.d
-  │   ├── 50-source-collector.conf
+  │   ├── 10-source-collector.conf
   │   ├── 50-match-collector.conf
   │   └── 50-source-rsyslog.conf
   ├── ...
