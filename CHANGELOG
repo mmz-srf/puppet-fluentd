@@ -4,6 +4,12 @@ Release notes for the srfmmz/puppet-fluentd module.
 
 ------------------------------------------
 
+#### 0.2.0
+IMPORTANT: this version will break your old configuration. 
+
+* CHANGE remove concattination of files 
+
+
 #### 0.1.4 - 2014/08/05
 
 * FEATURE added filter functionality (by softecspa) 

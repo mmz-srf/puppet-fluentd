@@ -6,189 +6,195 @@ puppet-fluentd
 Manage Fluentd installation, configuration and Plugin-management with Puppet using the td-agent. 
 
 ## Supported Operating Systems
+
 - Debian (tested on Debian 7.5) 
 - Ubuntu 
 - Redhat 
 - CentOS (tested on CentOS 6.4)
 
 ## Used Modules 
+
 - apt: "https://github.com/puppetlabs/puppetlabs-apt.git" (Only for Debian)
-- concat: "https://github.com/puppetlabs/puppetlabs-concat.git"
 - stdlib: "https://github.com/puppetlabs/puppetlabs-stdlib.git"
 
 ## Contributing
-* Fork it
-* Create a feature branch (`git checkout -b my-new-feature`)
-* Run rspec tests (`bundle exec rake spec` or `rake spec`)
-* Commit your changes (`git commit -am 'Added some feature'`)
-* Push to the branch (`git push origin my-new-feature`)
-* Create new Pull Request
+
+- Fork it
+- Create a feature branch (`git checkout -b my-new-feature`)
+- Run rspec tests (`bundle exec rake spec` or `rake spec`)
+- Commit your changes (`git commit -am 'Added some feature'`)
+- Push to the branch (`git push origin my-new-feature`)
+- Create new Pull Request
 
 ### Branches in this module
 - **master** tested and working. Latest Version on http://forge.puppetlabs.com
 - **developmemt** includes the newewst features. works too, mostly. 
 
 ## Configuration
+
 How to configure a Agent to send data to a centralised Fluentd-Server
 
 ### Install a Plugin
-Install your fluentd plugin. (check here for the right pluginname : http://fluentd.org/plugin/ ). 
 
-You can choose from a file or gem based instalation. 
+Install your fluentd plugin. (Check [here](http://fluentd.org/plugin/) for the
+right plugin name.)
+
+You can choose from a file or gem based installation.
+
 ```
-  include ::fluentd
-  
-  fluentd::install_plugin { 'elasticsearch': 
-    plugin_type => 'gem',
-    plugin_name => 'fluent-plugin-elasticsearch',
-  }
+include ::fluentd
+
+fluentd::install_plugin { 'elasticsearch':
+  plugin_type => 'gem',
+  plugin_name => 'fluent-plugin-elasticsearch',
+}
 ```
 
-### Create a Agent 
-The Agent watches over your logfiles and sends its content to the Collector. 
+### Create an Agent
+
+The agent watches over your logfiles and sends its content to the collector.
+
 ```
-  include ::fluentd
-  
-  fluentd::configfile { 'apache': }
-  fluentd::source { 'apache_main': 
-    configfile => 'apache'
-    type => 'tail',
-    format => 'apache2',
-    tag => 'apache.access_log',
-    config => {
-      'path' => '/var/log/apache2/access.log',
-      'pos_file' => '/var/tmp/fluentd.pos',
-    },
-    notify => Class['fluentd::service']
-  }
-  
-  fluentd::configfile { 'syslog': }
-  fluentd::source { 'syslog_main': 
-    configfile => 'syslog',
-    type => 'tail',
-    format => 'syslog',
-    tag => 'system.syslog',
-    config => {
-      'path' => '/var/log/syslog',
-      'pos_file' => '/tmp/td-agent.syslog.pos',
-    },
-    notify => Class['fluentd::service']
-  }
-  
-  fluentd::configfile { 'forward': }
-  fluentd::match { 'forward_main': 
-    configfile => 'forward'
-    pattern => '**',
-    type => 'forward',
-    servers => [
-      {'host' => 'PUT_YOUR_HOST_HERE', 'port' => '24224'}
+include ::fluentd
+
+fluentd::source { 'apache':
+  config => {
+    'format'   => 'apache2',
+    'path'     => '/var/log/apache2/access.log',
+    'pos_file' => '/var/tmp/fluentd.pos',
+    'tag'      => 'apache.access_log',
+    'type'     => 'tail',
+  },
+}
+
+fluentd::source { 'syslog':
+  config => {
+    'format'   => 'syslog',
+    'path'     => '/var/log/syslog',
+    'pos_file' => '/tmp/td-agent.syslog.pos',
+    'tag'      => 'system.syslog',
+    'type'     => 'tail',
+  },
+}
+
+fluentd::match { 'forward':
+  pattern  => '**',
+  priority => '80',
+  config   => {
+    'type'    => 'forward',
+    'servers' => [
+      { 'host' => 'fluentd.example.com', 'port' => '24224' }
     ],
-    notify => Class['fluentd::service']
-  }
+  },
+}
+
+# ensure an old config is no longer there
+fluentd::source { 'some_source':
+  ensure => 'absent',
+}
 ```
-#### creates on the Agent side following files : 
+
+...creates the following files:
+
 ```
 /etc/td-agent/
   ├── config.d
-  │   ├── apache.conf
-  │   ├── syslog.conf
-  │   └── forward.conf
+  │   ├── 50-source-apache.conf
+  │   ├── 50-source-syslog.conf
+  │   └── 80-match-forward.conf
   ├── ...
   ...
 ```
 
-### Create a Collector 
-The Collector collects all the data from the Agents. He now stores the data in files, Elasticsearch or elsewhere. 
-```
-  include ::fluentd
+### Create a Collector
 
-  fluentd::configfile { 'collector': }
-  fluentd::source { 'collector_main':
-    configfile => 'collector',
-    type => 'forward',
-    notify => Class['fluentd::service']
+The Collector collects all the data from the Agents. He now stores the data in
+files, Elasticsearch or elsewhere.
+
+```
+include ::fluentd
+
+fluentd::source { 'collector':
+  priority => '10',
+  config   => {
+    'type' => 'forward',
   }
-  
-  fluentd::match { 'collector_main':
-    configfile => 'collector',
-    pattern => '**',
-    type => 'elasticsearch',
-    config => {
-      'logstash_format' => true,
-    },
-    notify => Class['fluentd::service']
-  }
-  
-  # receive syslog messages on port 5140
-  # all rsyslog daemons on the clients sends theire messages to 5140
-  fluentd::configfile { 'rsyslog': }
-  fluentd::source { 'rsyslog_main':
-    configfile => 'rsyslog',
-    type => 'syslog',
-    tag => 'system.local',
-    config => {
-      'port' => '5140',
-      'bind' => '0.0.0.0',
-    },
-    notify => Class['fluentd::service']
-  }
+}
+
+fluentd::match { 'collector':
+  pattern => '**',
+  config  => {
+    'type'            => 'elasticsearch',
+    'logstash_format' => true,
+  },
+}
+
+# all rsyslog daemons on the clients sends their messages to 5140
+fluentd::source { 'rsyslog':
+  type   => 'syslog',
+  config => {
+    'port' => '5140',
+    'bind' => '0.0.0.0',
+    'tag'  => 'system.local',
+  },
+}
 ```
 
-#### creates on the Collectors side following files : 
+...creates the following files:
+
 ```
 /etc/td-agent/
   ├── config.d
-  │   └── collector.conf
+  │   ├── 10-source-collector.conf
+  │   ├── 50-match-collector.conf
+  │   └── 50-source-rsyslog.conf
   ├── ...
   ...
 ```
- 
-### copy ouput to multiple stores
+
+### Copy output to multiple stores
+
+An array of configurations implies type "copy".
+
 ````
-  $logger=[ { 'host' => 'logger-sample01', 'port' => '24224'},
-            { 'host' => 'logger-example01', 'port' => '24224', 'standby' => ''} ] 
-            
-  fluentd::match { 'forward_to_logger':
-      configfile  => 'sample_tail',
-      pattern     => 'alocal',
-      type        => 'copy',
-      config      => [
-      {
-        'type'               => 'forward',
-        'send_timeout'       => '60s',
-        'recover_wait'       => '10s',
-        'heartbeat_interval' => '1s',
-        'phi_threshold'      => 8,
-        'hard_timeout'       => '60s',
-        'flush_interval'     => '5s',
-        'servers'            => $logger,
-      },
-      {
-        'type'              => 'stdout',
-        'output_type'       => 'json',
-      }
-      ],
-      notify => Class['fluentd::service']
-  }
+$logger=[ { 'host' => 'logger-sample01', 'port' => '24224'},
+          { 'host' => 'logger-example01', 'port' => '24224', 'standby' => ''} ]
 
+fluentd::match { 'forward_to_logger':
+  pattern => 'alocal',
+  config  => [
+    {
+      'type'               => 'forward',
+      'send_timeout'       => '60s',
+      'recover_wait'       => '10s',
+      'heartbeat_interval' => '1s',
+      'phi_threshold'      => 8,
+      'hard_timeout'       => '60s',
+      'flush_interval'     => '5s',
+      'servers'            => $logger,
+    },
+    {
+      'type'              => 'stdout',
+      'output_type'       => 'json',
+    }
+  ],
+}
 ```
 
 ### add a filter
 ```
-    fluentd::configfile { 'myfilter': }
-    fluentd::filter { 'myfilter_main':
-      configfile          => 'myfilter',
+    fluentd::filter { 'myfilter':
       pattern             => '**',
-      type                => 'grep',
-      input_key           => 'key',
-      regexp              => '/*.foo.*/',
-      exclude             => 'baar',
-      output_tag          => 'mytag',
-      add_tag_prefix      => 'pre_',
-      remove_tag_prefix   => 'remove_',
-      add_tag_suffix      => '_after',
-      remove_tag_suffix   => '_remove',
       config     => {
+        'type'                => 'grep',
+        'input_key'           => 'key',
+        'regexp'              => '/*.foo.*/',
+        'exclude'             => 'baar',
+        'output_tag'          => 'mytag',
+        'add_tag_prefix'      => 'pre_',
+        'remove_tag_prefix'   => 'remove_',
+        'add_tag_suffix'      => '_after',
+        'remove_tag_suffix'   => '_remove',
         'customvalue' => true,
       }
     }
