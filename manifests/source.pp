@@ -6,6 +6,7 @@ define fluentd::source (
     $format       = false,
     $time_format  = false,
     $config       = {},
+    $pattern      = [],
 ) {
 
     concat::fragment { "source_${title}":
