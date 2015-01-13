@@ -3,6 +3,13 @@
 <% @config.sort_by{|key,val|key}.each do |key, val| -%>
   <%= key %> <%= val %>
 <% end -%>
+<% @pattern.each do |pat| -%>
+  <pattern>
+<% pat.sort_by{|key,val|key}.each do |key, val| -%>
+    <%= key %> <%= val %>
+<% end -%>
+  </pattern>
+<% end -%>
 <% if @format != false -%>  format <%= @format %><% end %>
 <% if @time_format != false -%>  time_format <%= @time_format %><% end %>
 <% if @tag != false -%>  tag <%= @tag %><% end %>
