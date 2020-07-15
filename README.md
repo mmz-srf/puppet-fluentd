@@ -1,3 +1,7 @@
+NOT MAINTAINED ANYMORE!
+=======================
+
+
 puppet-fluentd
 ==============
 
